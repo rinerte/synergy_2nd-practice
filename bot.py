@@ -1,5 +1,11 @@
+import os
 import json
 import spacy
+from dotenv import load_dotenv
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+
+ENV_FILE = ".env"
 
 nlp = spacy.load("ru_core_news_sm")
 
@@ -9,14 +15,14 @@ def load_responses():
 
 RESPONSES = load_responses()
 
-def find_keyword(text: str):
+def generate_response(text: str):
     doc = nlp(text.lower())
 
     for token in doc:
         lemma = token.lemma_
         if lemma in RESPONSES:
-            return lemma
-    return None
+            return RESPONSES[lemma]
+    return "Извините, я пока не знаю как на это ответить, спросите что-нибудь другое"
 
 def main():
     while True:
@@ -25,12 +31,8 @@ def main():
         if user_input.lower()=="выход":
             break
 
-        keyword = find_keyword(user_input)
-
-        if keyword:
-            print(f"Найдено ключевое слово: {keyword}")
-        else:
-            print("Ключевое слово не найдено")
+        answer = generate_response(user_input)
+        print(answer)
 
 if __name__ == "__main__":
     main()
